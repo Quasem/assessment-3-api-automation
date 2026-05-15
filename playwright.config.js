@@ -15,7 +15,7 @@ export default defineConfig({
     baseURL: 'https://jsonplaceholder.typicode.com',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     
     // Setting headless to false allows you to see the browser while it runs
     headless: false,
