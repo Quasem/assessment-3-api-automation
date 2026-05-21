@@ -1,8 +1,40 @@
-API Automation Framework (Focus Assessment 3)
 
-This repository contains a standalone API test automation framework built using Playwright and playwright-bdd.
+API Automation Framework (Focus Assessment 3) 
 
-API Documentation Reference: JSONPlaceholder Guide
+
+🎯 Project Overview & Goals
+
+The goal of this project is to build a robust, standalone API test automation framework using Playwright and playwright-bdd. This framework acts as an automated Quality Assurance tool to verify the backend behavior of a web application.
+
+It successfully tests:
+
+CRUD Operations: Creating, Reading, Updating, and Deleting resources.
+
+Data Filtering: Retrieving specific data via query parameters.
+
+Exception Handling: Ensuring the API gracefully handles invalid requests (e.g., 404 Not Found).
+
+API Documentation Reference: This framework tests the JSONPlaceholder API. You can find the full documentation and guide here:
+
+👉 https://jsonplaceholder.typicode.com/guide/
+
+
+💻 Installation & Setup
+
+To get this project running on your local machine, follow these steps:
+
+Clone the repository:
+
+git clone <your-repo-url>
+cd assessment-3-api-automation
+
+
+Install the dependencies:
+
+npm install
+
+
+
 
 🏗️ Architectural Approach
 
@@ -21,7 +53,7 @@ Run Everything (Recommended):
 npm run test
 
 
-(This triggers our custom script inside package.json which runs npx bddgen && npx playwright test)
+(This triggers our custom script inside package.json which runs npx bddgen and npx playwright test back-to-back)
 
 Run a Specific Test by Name:
 
@@ -31,6 +63,8 @@ npx playwright test -g "Create a new post"
 Run Tests by Tag (e.g., @smoke):
 
 npx playwright test --grep @smoke
+
+
 
 
 🐛 Debugging & Traces
@@ -57,13 +91,12 @@ This opens a browser displaying the exact API payload, headers, and response bod
 └── package.json            # Dependencies and npm scripts
 
 
+
+
 🚀 Future Improvements
 
 As this framework scales, future additions could include:
 
-Schema Validation: Integrating a library like ajv to strictly validate the shape of the JSON responses against a defined contract.
-
 Dynamic Data Generation: Using a tool like Faker.js to generate dynamic names and emails for POST requests instead of hardcoded strings.
 
 Multi-Environment Config: Expanding playwright.config.js to accept process.env.ENV variables to seamlessly switch between DEV, STAGING, and PROD endpoints.
-
