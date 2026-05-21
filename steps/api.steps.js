@@ -1,65 +1,87 @@
 import { createBdd } from 'playwright-bdd';
 import { expect } from '@playwright/test';
 import { PostService } from '../services/PostService.js';
+// 1. Import our new custom test fixture
+import { test } from '../fixtures/state.js'; 
 
-const { When, Then } = createBdd();
+// 2. Pass the extended test fixture to createBdd
+const { Given, When, Then } = createBdd(test);
 
-// We store the response here so the 'When' steps can save it, 
-// and the 'Then' steps can read it to make assertions.
-let response; 
+// --- GIVEN ---
+Given('the JSONPlaceholder API is available', async () => {
+  // Simple setup step for readability
+});
 
-// --- GET (Retrieve Data) ---
-When('I request all posts', async ({ request }) => {
+Given('an existing post with ID {int}', async ({ sharedState }, id) => {
+  sharedState.postId = id; // Store ID safely in the isolated scenario state
+});
+
+Given('I have a new post payload with title {string} and body {string}', async ({ sharedState }, title, body) => {
+  sharedState.payload = { title, body }; 
+});
+
+// --- WHEN ---
+When('I request all posts', async ({ request, sharedState }) => {
   const postService = new PostService(request);
-  response = await postService.getAllPosts();
+  sharedState.response = await postService.getAllPosts();
 });
 
-// --- POST (Create Data) ---
-When('I create a new post with title {string} and body {string}', async ({ request }, title, body) => {
+// Added for the "Filtered Data" requirement!
+When('I request posts filtered by userId {int}', async ({ request, sharedState }, userId) => {
   const postService = new PostService(request);
-  response = await postService.createPost(title, body);
+  sharedState.response = await postService.getPostsByUserId(userId);
 });
 
-// --- PUT (Update Data) ---
-When('I update post {int} with title {string}', async ({ request }, id, title) => {
+When('I send a POST request to create the post', async ({ request, sharedState }) => {
   const postService = new PostService(request);
-  response = await postService.updatePost(id, title);
+  sharedState.response = await postService.createPost(
+    sharedState.payload.title,
+    sharedState.payload.body
+  );
 });
 
-// --- DELETE (Remove Data) ---
-When('I delete post {int}', async ({ request }, id) => {
+When('I update the post with title {string}', async ({ request, sharedState }, newTitle) => {
   const postService = new PostService(request);
-  response = await postService.deletePost(id);
+  // Using an "updates object" to fix the hidden mutations feedback!
+  sharedState.response = await postService.updatePost(sharedState.postId, { title: newTitle });
 });
 
-// --- EXCEPTION HANDLING (404 Not Found) ---
-When('I request a post that does not exist', async ({ request }) => {
+When('I delete the post', async ({ request, sharedState }) => {
   const postService = new PostService(request);
-  response = await postService.getNonExistentPost();
+  sharedState.response = await postService.deletePost(sharedState.postId);
+});
+
+When('I request a post with ID {int}', async ({ request, sharedState }, id) => {
+  const postService = new PostService(request);
+  sharedState.response = await postService.getPostById(id); // Hardcoded ID removed
 });
 
 
-// ==========================================
-// ASSERTIONS (The 'Then' steps)
-// ==========================================
-
-Then('the response status should be {int}', async ({}, statusCode) => {
-  expect(response.status()).toBe(statusCode);
+// --- THEN ---
+Then('the response status should be {int}', async ({ sharedState }, statusCode) => {
+  expect(sharedState.response.status()).toBe(statusCode);
 });
 
-Then('the response should contain more than {int} posts', async ({}, count) => {
-  // Parse the JSON body from the response
-  const responseBody = await response.json();
-  expect(responseBody.length).toBeGreaterThan(count);
+Then('the response should contain more than {int} posts', async ({ sharedState }, count) => {
+  const body = await sharedState.response.json();
+  expect(body.length).toBeGreaterThan(count);
 });
 
-Then('the response body should match the created post', async ({}) => {
-  const responseBody = await response.json();
-  expect(responseBody.title).toBe("My First API Test");
-  expect(responseBody.body).toBe("Playwright is awesome");
+Then('all returned posts should belong to userId {int}', async ({ sharedState }, userId) => {
+  const body = await sharedState.response.json();
+  // Validates our Filtered Data requirement
+  body.forEach(post => {
+    expect(post.userId).toBe(userId);
+  });
 });
 
-Then('the response body should reflect the updated title', async ({}) => {
-  const responseBody = await response.json();
-  expect(responseBody.title).toBe("Updated Title");
+Then('the response body should match title {string} and body {string}', async ({ sharedState }, expectedTitle, expectedBody) => {
+  const body = await sharedState.response.json();
+  expect(body.title).toBe(expectedTitle);
+  expect(body.body).toBe(expectedBody);
+});
+
+Then('the response body should reflect the updated title {string}', async ({ sharedState }, expectedTitle) => {
+  const body = await sharedState.response.json();
+  expect(body.title).toBe(expectedTitle);
 });

@@ -1,120 +1,69 @@
-# API Automation Framework (Focus Assessment 3)
+API Automation Framework (Focus Assessment 3)
 
-This repository contains a standalone API test automation framework built using Playwright and playwright-bdd. It demonstrates the integration of Behavior-Driven Development (BDD) with API testing, utilizing the JSONPlaceholder public API.
+This repository contains a standalone API test automation framework built using Playwright and playwright-bdd.
 
+API Documentation Reference: JSONPlaceholder Guide
 
-🎯 **Project Goals & Capabilities**
+🏗️ Architectural Approach
 
-The primary objective of this project is to demonstrate core API interactions embedded seamlessly within a BDD structure.
+This framework implements the Service Object Model pattern, solving common API testing issues:
 
-The framework successfully executes and validates:
+Fail-Fast Validation: The PostService validates raw HTTP responses (ensuring < 400 status codes) before passing data to the step definitions, preventing silent step failures.
 
-Core CRUD Operations: GET, POST, PUT, and DELETE requests.
+Isolated Scenario State: Utilizes Playwright custom fixtures (sharedState) to pass data safely between Given/When/Then steps, ensuring parallel execution safety without global variable leakage.
 
-Exception Handling: Negative path testing (e.g., asserting 404 Not Found errors).
+🏃 Running the Tests
 
-Data Handling: Retrieving payload data, parsing JSON responses, and asserting on specific keys and values.
+How it works: Because we use BDD, we must first compile our English .feature files into JavaScript tests. The npx bddgen command handles this translation automatically.
 
+Run Everything (Recommended):
 
-🏗️ **Architectural Approach**
-
-To maintain clean code and separation of concerns (mirroring the UI Page Object Model from Focus 2), this framework implements the Service Object Model pattern.
-
-1. **Behavior-Driven Development (BDD)**
-
-Location: features/posts.feature
-
-Purpose: Test scenarios are written in plain-English Gherkin syntax. This ensures the API tests serve as living documentation that non-technical stakeholders can easily understand.
-
-2. **Service Layer (The Engine)** 
-
-Location: services/PostService.js
-
-Purpose: All raw HTTP request logic (URLs, endpoints, payload construction) is isolated here using Playwright's native APIRequestContext. If the API contract changes, updates are made in this single file rather than across dozens of step definitions.
-
-3. **Step Definitions (The Glue)**
-
-Location: steps/api.steps.js
-
-Purpose: Connects the Gherkin steps to the PostService methods, extracts the JSON responses, and executes strict assertions (e.g., expect(response.status()).toBe(200)).
+npm run test
 
 
+(This triggers our custom script inside package.json which runs npx bddgen && npx playwright test)
 
-🛠️ **Installation & Setup**
+Run a Specific Test by Name:
 
-Prerequisites
-
-Node.js (v18 or higher recommended)
-
-Git
-
-Setup Instructions
-
-Clone the repository to your local machine.
-
-Navigate to the project directory:
-
-cd assessment-3-api-automation
+npx playwright test -g "Create a new post"
 
 
-Install the required dependencies (@playwright/test and playwright-bdd):
+Run Tests by Tag (e.g., @smoke):
 
-npm install
-
-
-🏃 **Running the Tests**
-
-This framework requires a sync generation step before execution to compile the Gherkin features into Playwright test files.
-
-Generate BDD Tests:
-
-npx bddgen
+npx playwright test --grep @smoke
 
 
-Execute API Tests:
+🐛 Debugging & Traces
 
-npx playwright test
+If an API test fails, do not use show-trace directly. Instead, view the embedded network logs via the HTML report:
 
-
-View Detailed HTML Report:
-
-npx playwright show-report
+npm run report
 
 
+This opens a browser displaying the exact API payload, headers, and response bodies for any failed test.
 
-🐛 **Debugging & Traces**
-This framework is configured to capture detailed network traces on failure. To test this:
+📂 Project Structure
 
-Open features/posts.feature.
+├── features/               # Gherkin API Test Scenarios (posts.feature)
 
-Change any expected status code (e.g., change 200 to 500).
+├── fixtures/               # Playwright custom fixtures (state.js for isolated data)
 
-Run npx playwright test.
+├── services/               # Service Object classes (PostService.js)
 
-Run npx playwright show-trace to view the exact API payload, headers, and response body that caused the failure.
+├── steps/                  # Step Definitions (api.steps.js)
 
+├── playwright.config.js    # Master Framework Configuration
 
-
-📂 **Project Structure**
-
-├── features/               # Gherkin API Test Scenarios (.feature)
-
-├── services/               # Service Object classes (API request logic)
-  
-     └── PostService.js      
-
-├── steps/                  # Step Definitions (Glue code & assertions)
-  
-     └── api.steps.js        
-
-├── .features-gen/          # Auto-generated Playwright tests (Git ignored)
-
-├── playwright.config.js    # Master Framework Configuration (BaseURL setup)
-
-└── package.json            # Dependencies
+└── package.json            # Dependencies and npm scripts
 
 
-👥 **Summary**
+🚀 Future Improvements
 
-This project proves that automation concepts learned in UI testing (Separation of Concerns, BDD integration, DRY principles) can be effectively mapped to backend API testing. Playwright's built-in request fixture is leveraged to avoid the need for external HTTP libraries like Axios or Supertest, keeping the framework lightweight and cohesive.
+As this framework scales, future additions could include:
+
+Schema Validation: Integrating a library like ajv to strictly validate the shape of the JSON responses against a defined contract.
+
+Dynamic Data Generation: Using a tool like Faker.js to generate dynamic names and emails for POST requests instead of hardcoded strings.
+
+Multi-Environment Config: Expanding playwright.config.js to accept process.env.ENV variables to seamlessly switch between DEV, STAGING, and PROD endpoints.
 
