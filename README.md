@@ -25,7 +25,8 @@ To get this project running on your local machine, follow these steps:
 
 Clone the repository:
 
-git clone <your-repo-url>
+git clone https://github.com/Quasem/assessment-3-api-automation.git
+
 cd assessment-3-api-automation
 
 
@@ -35,14 +36,11 @@ npm install
 
 
 
-
-🏗️ Architectural Approach
-
-This framework implements the Service Object Model pattern, solving common API testing issues:
-
-Fail-Fast Validation: The PostService validates raw HTTP responses (ensuring < 400 status codes) before passing data to the step definitions, preventing silent step failures.
-
-Isolated Scenario State: Utilizes Playwright custom fixtures (sharedState) to pass data safely between Given/When/Then steps, ensuring parallel execution safety without global variable leakage.
+## 🏗️ Architectural Approach
+This framework implements the **Service Object Model** pattern, solving common API testing issues:
+- **Pure API Testing Strategy:** Validation is strictly deferred to the `Then` step definitions rather than the service layer. This prevents blocking legitimate negative tests (e.g., intentionally asserting a 404 response) and adheres to BDD best practices.
+- **Isolated Scenario State:** Utilizes Playwright custom fixtures (`sharedState`) to pass data safely between Given/When/Then steps, ensuring parallel execution safety without global variable leakage.
+- **Data-Driven Testing:** Utilizes Gherkin `Scenario Outlines` to dynamically run single API tests against multiple sets of data (e.g., different user IDs) efficiently.
 
 🏃 Running the Tests
 
